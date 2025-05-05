@@ -52,3 +52,7 @@ arcgis_maps_core
 /ios/Podfile.lock
 
 
+.vscode/launch.json
+ios/Runner.xcworkspace/contents.xcworkspacedata
+ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme
+ios/Runner.xcodeproj/project.pbxproj

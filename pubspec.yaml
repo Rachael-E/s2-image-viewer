@@ -1,5 +1,5 @@
-name: display_a_map
-description: "A new Flutter project."
+name: s2_image_viewer
+description: "An app for viewing satellite images from Sentinel 2, built with the ArcGIS Maps SDK for Flutter"
 publish_to: 'none'
 version: 0.1.0
 
@@ -9,12 +9,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  arcgis_maps: ^200.7.0
+  arcgis_maps: ^200.7.0+4560
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
 
 flutter:
   uses-material-design: true
