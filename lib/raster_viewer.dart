@@ -24,8 +24,8 @@ class _RasterViewerState extends State<RasterViewer> {
   bool _isLoading = false;
   String? _loadingMessage;
 
-  DateTime acquisitionStartDate = DateTime(2024, 9, 1);
-  DateTime acquisitionEndDate = DateTime(2024, 11, 1);
+  late DateTime acquisitionStartDate;
+  late DateTime acquisitionEndDate;
 
   double xMin = -79.12974311525639;
   double xMax = -79.01888017117213;
@@ -37,6 +37,14 @@ class _RasterViewerState extends State<RasterViewer> {
   @override
   void initState() {
     super.initState();
+
+    final now = DateTime.now();
+    final year = now.month < 12
+        ? now.year - 1
+        : now.year; // use the latest Autumn season
+    acquisitionStartDate = DateTime(year, 9, 1); // 1st Sept
+    acquisitionEndDate = DateTime(year, 11, 1); // 1st Nove
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showDialogAfterBuild();
     });

@@ -20,7 +20,7 @@ String formatDate(DateTime date) {
   final month = months[date.month - 1];
   final year = date.year.toString().substring(2);
 
-  return "$day $month '$year";
+  return "$day-$month $year";
 }
 
 Future<DateTimeRange?> pickDateRange({
@@ -30,7 +30,7 @@ Future<DateTimeRange?> pickDateRange({
 }) {
   return showDateRangePicker(
     context: context,
-    initialEntryMode: DatePickerEntryMode.inputOnly,
+    initialEntryMode: DatePickerEntryMode.input,
     helpText: 'Select range within the past 14 months',
     firstDate: DateTime.now().subtract(const Duration(days: 30 * 14)),
     lastDate: DateTime.now(),
@@ -41,15 +41,18 @@ Future<DateTimeRange?> pickDateRange({
     builder: (context, child) {
       return Theme(
         data: ThemeData.dark().copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: Colors.amber,
-            onPrimary: Colors.black,
-            surface: Colors.black,
-            onSurface: Colors.white,
-            secondary: Color.fromARGB(255, 99, 98, 85),
-          ),
-          dialogTheme: const DialogTheme(backgroundColor: Colors.black),
-        ),
+            colorScheme: const ColorScheme.dark(
+              primary: Colors.amber,
+              onPrimary: Colors.black,
+              surface: Colors.black,
+              onSurface: Colors.white,
+              secondary: Color.fromARGB(255, 99, 98, 85),
+            ),
+            dialogTheme: const DialogTheme(backgroundColor: Colors.black),
+            textTheme: TextTheme(
+              headlineLarge:
+                  TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            )),
         child: child!,
       );
     },
@@ -302,6 +305,9 @@ Widget buildSlider({
   required void Function(int) onSliderChanged,
   required String Function(int) getDateForIndex,
 }) {
+  final maxIndex = rasterMetadata.length > 1 ? rasterMetadata.length - 1 : 1;
+  final safeSliderIndex = currentIndex.clamp(0, maxIndex).toDouble();
+
   return Column(
     children: [
       SliderTheme(
@@ -316,12 +322,10 @@ Widget buildSlider({
           inactiveTrackColor: Colors.grey.shade700,
         ),
         child: Slider(
-          value: currentIndex.toDouble(),
+          value: safeSliderIndex,
           min: 0,
           thumbColor: Colors.amber,
-          max: rasterMetadata.length > 1
-              ? (rasterMetadata.length - 1).toDouble()
-              : 1,
+          max: maxIndex.toDouble(),
           divisions:
               rasterMetadata.length > 1 ? rasterMetadata.length - 1 : null,
           onChanged: rasterMetadata.length > 1
@@ -340,7 +344,7 @@ Widget buildSlider({
               label,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 10,
                 color: isSelected ? Colors.yellow : Colors.white70,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
