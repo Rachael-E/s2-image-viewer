@@ -115,6 +115,8 @@ class _RasterViewerState extends State<RasterViewer> {
       print("⚠️ Raster layer $targetLayerName not found in map.");
     }
 
+    await Future.delayed(const Duration(milliseconds: 50));
+
     setState(() {
       currentSliderIndex = newIndex;
     });
@@ -240,14 +242,9 @@ class _RasterViewerState extends State<RasterViewer> {
       cached.add(fetchedRasterMetadataAttribute);
     }
 
-    final firstObjectId = cached[0]['objectid'].toString();
-    for (final layer in _map.operationalLayers.whereType<RasterLayer>()) {
-      layer.isVisible = layer.name == firstObjectId;
-    }
-
     setState(() {
       rasterMetadata = cached;
-      currentSliderIndex = 0;
+      currentSliderIndex = cached.length;
     });
   }
 
@@ -324,9 +321,8 @@ class _RasterViewerState extends State<RasterViewer> {
       ..sortField = 'OBJECTID'
       ..whereClause = 'OBJECTID = $objectId';
 
-    final rasterLayer = RasterLayer.withRaster(raster)
-      ..name = layerName
-      ..isVisible = true;
+    final rasterLayer = RasterLayer.withRaster(raster)..name = layerName;
+
     await rasterLayer
         .load()
         .whenComplete(() => map.operationalLayers.add(rasterLayer));
