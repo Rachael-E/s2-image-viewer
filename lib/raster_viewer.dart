@@ -243,7 +243,10 @@ class _RasterViewerState extends State<RasterViewer> {
     );
 
     if (confirm != true) {
-      setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+        _loadingMessage = null;
+      });
       return;
     }
 
@@ -252,7 +255,12 @@ class _RasterViewerState extends State<RasterViewer> {
     List<Map<String, dynamic>> cached = [];
 
     for (int i = 0; i < fetched.length; i++) {
-      final fetchedRasterMetadataAttribute = fetched[i];
+      if (!mounted) return;
+
+      setState(() {
+        _loadingMessage =
+            'Fetching and caching ${i + 1}/${fetched.length} rasters...';
+      });
 
       await showAndCacheRaster(
         index: i,
@@ -261,8 +269,12 @@ class _RasterViewerState extends State<RasterViewer> {
         map: _map,
       );
 
-      cached.add(fetchedRasterMetadataAttribute);
+      cached.add(fetched[i]);
     }
+
+    setState(() {
+      _loadingMessage = 'Finalizing...';
+    });
 
     setState(() {
       rasterMetadata = cached;
@@ -329,6 +341,8 @@ class _RasterViewerState extends State<RasterViewer> {
     final existingLayer = _getRasterLayerByName(layerName);
     if (existingLayer != null) {
       print("✅ Raster layer $layerName already added to map.");
+      markLayerDrawnIfComplete(layerName);
+
       return;
     }
 
@@ -350,23 +364,28 @@ class _RasterViewerState extends State<RasterViewer> {
         .whenComplete(() => map.operationalLayers.add(rasterLayer));
 
     _mapViewController.onDrawStatusChanged.listen((event) {
-      if (event == DrawStatus.completed &&
-          !_drawnRasterLayerNames.contains(layerName)) {
-        _drawnRasterLayerNames.add(layerName);
-        print("✅ Draw completed for $layerName");
-
-        if (_drawnRasterLayerNames.length >= expectedRasterLayerCount) {
-          print("✅ All raster layers drawn — showing slider");
-          if (mounted) {
-            setState(() {
-              _isCompleted = event == DrawStatus.completed;
-              _isLoading = false;
-              _loadingMessage = null;
-            });
-          }
-        }
+      if (event == DrawStatus.completed) {
+        markLayerDrawnIfComplete(layerName);
       }
     });
+  }
+
+  void markLayerDrawnIfComplete(String layerName) {
+    if (!_drawnRasterLayerNames.contains(layerName)) {
+      _drawnRasterLayerNames.add(layerName);
+      print("🟡 Marked $layerName as drawn");
+
+      if (_drawnRasterLayerNames.length >= expectedRasterLayerCount) {
+        print("✅ All raster layers drawn — showing slider");
+        if (mounted) {
+          setState(() {
+            _isCompleted = true;
+            _isLoading = false;
+            _loadingMessage = null;
+          });
+        }
+      }
+    }
   }
 
   RasterLayer? _getRasterLayerByName(String name) {
