@@ -73,7 +73,7 @@ Future<void> showWelcomeDialog({
         style: TextStyle(color: Colors.yellow),
       ),
       content: const Text(
-        'Browse satellite images from Sentinel-2 to see how the trees change over the months. Tap below to choose a date range.',
+        'Browse satellite images from Sentinel-2 to see how foliage changes throughout the year. Tap below to choose a date range.',
         style: TextStyle(color: Colors.white),
       ),
       actions: [
@@ -222,19 +222,23 @@ Widget buildLoadingOverlay(String? message) => Stack(
           left: 0,
           right: 0,
           child: Center(
-            child: Column(
-              children: [
-                const CircularProgressIndicator(),
-                const SizedBox(height: 8),
-                Text(
-                  message ?? 'Loading... please wait',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                    backgroundColor: Colors.black54,
+            child: SafeArea(
+              child: Column(
+                children: [
+                  const CircularProgressIndicator(
+                    color: Colors.amber,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  Text(
+                    message ?? 'Loading... please wait',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      backgroundColor: Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

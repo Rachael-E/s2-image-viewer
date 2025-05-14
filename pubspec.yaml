@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   arcgis_maps: ^200.7.0+4560
+  http: ^1.4.0
 
 dev_dependencies:
   flutter_test:

@@ -117,9 +117,7 @@ class _RasterViewerState extends State<RasterViewer> {
 
     await Future.delayed(const Duration(milliseconds: 50));
 
-    setState(() {
-      currentSliderIndex = newIndex;
-    });
+    setState(() => currentSliderIndex = newIndex);
   }
 
   Future<void> onMapViewReady() async {
@@ -202,6 +200,30 @@ class _RasterViewerState extends State<RasterViewer> {
     });
     final fetched = await fetchRasterMetadata();
     if (!mounted) return;
+
+    // Show message if no imagery is available
+    if (fetched.isEmpty) {
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('No Imagery Found'),
+          content: const Text(
+              'We found 0 satellite images with your chosen processing needs.\n\nPlease try different settings.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+
+      setState(() {
+        _isLoading = false;
+        _loadingMessage = null;
+      });
+      return;
+    }
 
     final confirm = await showDialog<bool>(
       context: context,
