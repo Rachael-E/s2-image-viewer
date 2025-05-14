@@ -124,7 +124,6 @@ Widget buildCloudOption({
 Future<double?> showCloudCoverDialog({
   required BuildContext context,
   required double? selectedCloudCover,
-  required void Function(double?) onThresholdChosen,
   required String formattedStart,
   required String formattedEnd,
 }) async {
@@ -187,32 +186,7 @@ Future<double?> showCloudCoverDialog({
     ),
   );
 
-  if (result != null) {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Confirm Selection"),
-        content: Text(
-            "You've chosen images from $formattedStart to $formattedEnd with up to ${(result * 100).toInt()}% cloud cover. Proceed?"),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text("Cancel")),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text("Yes, continue"),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      onThresholdChosen(result);
-      return result;
-    }
-  }
-
-  return null;
+  return result;
 }
 
 Widget buildLoadingOverlay(String? message) => Stack(

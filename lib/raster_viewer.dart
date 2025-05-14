@@ -158,35 +158,54 @@ class _RasterViewerState extends State<RasterViewer> {
       initialEnd: acquisitionEndDate,
     );
 
-    if (!mounted) return;
+    if (!mounted || result == null) return;
 
-    if (result != null) {
-      setState(() {
-        acquisitionStartDate = result.start;
-        acquisitionEndDate = result.end;
-      });
+    setState(() {
+      acquisitionStartDate = result.start;
+      acquisitionEndDate = result.end;
+    });
 
-      final formattedStart = formatDate(acquisitionStartDate);
-      final formattedEnd = formatDate(acquisitionEndDate);
+    final formattedStart = formatDate(acquisitionStartDate);
+    final formattedEnd = formatDate(acquisitionEndDate);
 
-      await showCloudCoverDialog(
-        context: context,
-        selectedCloudCover: _selectedCloudCover,
-        formattedStart: formattedStart,
-        formattedEnd: formattedEnd,
-        onThresholdChosen: (value) async {
-          if (!mounted) return;
+    final selected = await showCloudCoverDialog(
+      context: context,
+      selectedCloudCover: _selectedCloudCover,
+      formattedStart: formattedStart,
+      formattedEnd: formattedEnd,
+    );
 
-          setState(() {
-            _selectedCloudCover = value;
-            _isLoading = true;
-            _loadingMessage = "Fetching and caching rasters...";
-          });
+    if (!mounted || selected == null) return;
 
-          await _handleAutumnImagery();
-        },
-      );
-    }
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Confirm Selection"),
+        content: Text(
+          "You've chosen images from $formattedStart to $formattedEnd with up to ${(selected * 100).toInt()}% cloud cover. Proceed?",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Yes, continue"),
+          ),
+        ],
+      ),
+    );
+
+    if (!mounted || confirm != true) return;
+
+    setState(() {
+      _selectedCloudCover = selected;
+      _isLoading = true;
+      _loadingMessage = "Fetching and caching rasters...";
+    });
+
+    await _handleAutumnImagery();
   }
 
   Future<void> _handleAutumnImagery() async {
