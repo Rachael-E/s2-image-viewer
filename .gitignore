@@ -50,9 +50,3 @@ app.*.map.json
 arcgis_maps_core
 *.so
 /ios/Podfile.lock
-
-
-.vscode/launch.json
-ios/Runner.xcworkspace/contents.xcworkspacedata
-ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme
-ios/Runner.xcodeproj/project.pbxproj

@@ -51,7 +51,7 @@ Future<DateTimeRange?> pickDateRange({
             dialogTheme: const DialogTheme(backgroundColor: Colors.black),
             textTheme: TextTheme(
               headlineLarge:
-                  TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             )),
         child: child!,
       );
