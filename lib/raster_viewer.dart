@@ -254,12 +254,12 @@ class _RasterViewerState extends State<RasterViewer> {
     expectedRasterLayerCount = fetched.length;
     List<Map<String, dynamic>> cached = [];
 
-    for (int i = 0; i < fetched.length; i++) {
+    for (int i = 0; i < expectedRasterLayerCount; i++) {
       if (!mounted) return;
 
       setState(() {
         _loadingMessage =
-            'Fetching and caching ${i + 1}/${fetched.length} rasters...';
+            'Fetching and caching ${i + 1}/$expectedRasterLayerCount rasters...';
       });
 
       await showAndCacheRaster(
@@ -274,9 +274,6 @@ class _RasterViewerState extends State<RasterViewer> {
 
     setState(() {
       _loadingMessage = 'Finalizing...';
-    });
-
-    setState(() {
       rasterMetadata = cached;
       currentSliderIndex = cached.length;
     });
