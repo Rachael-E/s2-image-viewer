@@ -60,37 +60,31 @@ class _RasterViewerState extends State<RasterViewer> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: Stack(
-              children: [
-                ArcGISMapView(
-                  controllerProvider: () => _mapViewController,
-                  onMapViewReady: onMapViewReady,
-                ),
-                if (_isLoading) buildLoadingOverlay(_loadingMessage),
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: buildBottomControls(
-                    context: context,
-                    isCompleted: _isCompleted,
-                    rasterMetadata: rasterMetadata,
-                    onSettingsPressed: _promptUserForImageryDates,
-                    onInfoPressed: () => showInfoDialog(context),
-                    slider: buildSlider(
-                      context: context,
-                      currentIndex: currentSliderIndex,
-                      rasterMetadata: rasterMetadata,
-                      onSliderChanged: _onSliderChanged,
-                      getDateForIndex: (index) =>
-                          getDateForIndex(index, rasterMetadata),
-                    ),
-                  ),
-                ),
-              ],
+          ArcGISMapView(
+            controllerProvider: () => _mapViewController,
+            onMapViewReady: onMapViewReady,
+          ),
+          if (_isLoading) buildLoadingOverlay(_loadingMessage),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: buildBottomControls(
+              context: context,
+              isCompleted: _isCompleted,
+              rasterMetadata: rasterMetadata,
+              onSettingsPressed: _promptUserForImageryDates,
+              onInfoPressed: () => showInfoDialog(context),
+              slider: buildSlider(
+                context: context,
+                currentIndex: currentSliderIndex,
+                rasterMetadata: rasterMetadata,
+                onSliderChanged: _onSliderChanged,
+                getDateForIndex: (index) =>
+                    getDateForIndex(index, rasterMetadata),
+              ),
             ),
           ),
         ],
@@ -110,9 +104,9 @@ class _RasterViewerState extends State<RasterViewer> {
 
     if (selectedLayer != null) {
       selectedLayer.isVisible = true;
-      print("✅ Displayed raster layer $targetLayerName from index $newIndex");
+      debugPrint("✅ Displayed raster layer $targetLayerName from index $newIndex");
     } else {
-      print("⚠️ Raster layer $targetLayerName not found in map.");
+      debugPrint("⚠️ Raster layer $targetLayerName not found in map.");
     }
 
     await Future.delayed(const Duration(milliseconds: 50));
@@ -121,12 +115,6 @@ class _RasterViewerState extends State<RasterViewer> {
   }
 
   Future<void> onMapViewReady() async {
-    _mapViewController.onDrawStatusChanged.listen((status) {
-      setState(() {
-        _isCompleted = status == DrawStatus.completed;
-      });
-    });
-
     _map = ArcGISMap.withBasemapStyle(BasemapStyle.arcGISDarkGrayBase);
     _mapViewController.arcGISMap = _map;
 
@@ -334,13 +322,13 @@ class _RasterViewerState extends State<RasterViewer> {
         final date = DateTime.fromMillisecondsSinceEpoch(r['acquisitiondate']);
         final cloud = (r['cloudcover'] * 100).toStringAsFixed(1);
         final id = r['objectid'];
-        print('📅 $date — ☁️ $cloud% cloud cover — 🆔 $id');
+        debugPrint('📅 $date — ☁️ $cloud% cloud cover — 🆔 $id');
       }
 
       return rasterMetadata;
     } else {
-      print('❌ Error: ${response.statusCode}');
-      print('Body: ${response.body}');
+      debugPrint('❌ Error: ${response.statusCode}');
+      debugPrint('Body: ${response.body}');
       return [];
     }
   }
@@ -356,7 +344,7 @@ class _RasterViewerState extends State<RasterViewer> {
 
     final existingLayer = _getRasterLayerByName(layerName);
     if (existingLayer != null) {
-      print("✅ Raster layer $layerName already added to map.");
+      debugPrint("✅ Raster layer $layerName already added to map.");
       markLayerDrawnIfComplete(layerName);
 
       return;
@@ -389,10 +377,10 @@ class _RasterViewerState extends State<RasterViewer> {
   void markLayerDrawnIfComplete(String layerName) {
     if (!_drawnRasterLayerNames.contains(layerName)) {
       _drawnRasterLayerNames.add(layerName);
-      print("🟡 Marked $layerName as drawn");
+      debugPrint("🟡 Marked $layerName as drawn");
 
       if (_drawnRasterLayerNames.length >= expectedRasterLayerCount) {
-        print("✅ All raster layers drawn — showing slider");
+        debugPrint("✅ All raster layers drawn — showing slider");
         if (mounted) {
           setState(() {
             _isCompleted = true;

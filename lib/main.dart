@@ -19,6 +19,21 @@ void main() {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.brown),
         useMaterial3: true,
+        sliderTheme: SliderThemeData(
+          trackHeight: 4,
+          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+          overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
+          tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 6),
+          activeTickMarkColor: Colors.white,
+          inactiveTickMarkColor: Colors.white,
+          activeTrackColor: Colors.grey.shade700,
+          inactiveTrackColor: Colors.grey.shade700,
+          valueIndicatorColor: Colors.amber,
+          valueIndicatorTextStyle: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       home: const RasterViewer(),
     ),

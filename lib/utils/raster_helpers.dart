@@ -20,7 +20,7 @@ String formatDate(DateTime date) {
   final month = months[date.month - 1];
   final year = date.year.toString().substring(2);
 
-  return "$day-$month $year";
+  return "$day $month $year";
 }
 
 Future<DateTimeRange?> pickDateRange({
@@ -87,7 +87,7 @@ Future<void> showWelcomeDialog({
             Navigator.pop(context);
             onProceed(); // external callback to trigger date picker
           },
-          icon: const Icon(Icons.calendar_today),
+          icon: const Icon(Icons.calendar_today, color: Colors.yellow),
           label: const Text("Choose Date Range"),
         ),
       ],
@@ -189,49 +189,30 @@ Future<double?> showCloudCoverDialog({
   return result;
 }
 
-Widget buildLoadingOverlay(String? message) => Stack(
-      children: [
-        Positioned(
-          top: 40,
-          left: 0,
-          right: 0,
-          child: Center(
-            child: SafeArea(
-              child: Column(
-                children: [
-                  const CircularProgressIndicator(
-                    color: Colors.amber,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    message ?? 'Loading... please wait',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                      backgroundColor: Colors.black54,
-                    ),
-                  ),
-                ],
+Widget buildLoadingOverlay(String? message) => Positioned(
+      top: 40,
+      left: 0,
+      right: 0,
+      child: Center(
+        child: SafeArea(
+          child: Column(
+            spacing: 15,
+            children: [
+              const CircularProgressIndicator(
+                color: Colors.amber,
               ),
-            ),
+              Text(
+                message ?? 'Loading... please wait',
+                style: const TextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                  backgroundColor: Colors.black54,
+                ),
+              ),
+            ],
           ),
         ),
-        const Positioned(
-          bottom: 32,
-          left: 16,
-          right: 16,
-          child: Center(
-            child: Text(
-              'Fetching imagery...',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.white,
-                backgroundColor: Colors.black54,
-              ),
-            ),
-          ),
-        ),
-      ],
+      ),
     );
 
 Widget buildBottomControls({
@@ -247,6 +228,7 @@ Widget buildBottomControls({
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     child: Column(
       mainAxisSize: MainAxisSize.min,
+      spacing: 10,
       children: [
         if (isCompleted && rasterMetadata.isNotEmpty) slider,
         const SizedBox(height: 10),
@@ -285,36 +267,29 @@ Widget buildSlider({
 }) {
   final maxIndex = rasterMetadata.length > 1 ? rasterMetadata.length - 1 : 1;
   final safeSliderIndex = currentIndex.clamp(0, maxIndex).toDouble();
+  final label =
+      rasterMetadata.isNotEmpty && currentIndex < rasterMetadata.length
+          ? getDateForIndex(currentIndex)
+          : null;
 
   return Column(
     children: [
-      SliderTheme(
-        data: SliderTheme.of(context).copyWith(
-          trackHeight: 4,
-          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
-          overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
-          tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 6),
-          activeTickMarkColor: Colors.white,
-          inactiveTickMarkColor: Colors.white,
-          activeTrackColor: Colors.grey.shade700,
-          inactiveTrackColor: Colors.grey.shade700,
-        ),
-        child: Slider(
-          value: safeSliderIndex,
-          min: 0,
-          thumbColor: Colors.amber,
-          max: maxIndex.toDouble(),
-          divisions:
-              rasterMetadata.length > 1 ? rasterMetadata.length - 1 : null,
-          onChanged: rasterMetadata.length > 1
-              ? (value) => onSliderChanged(value.round())
-              : null,
-        ),
+      Slider(
+        label: label,
+        value: safeSliderIndex,
+        min: 0,
+        thumbColor: Colors.amber,
+        max: maxIndex.toDouble(),
+        divisions: rasterMetadata.length > 1 ? rasterMetadata.length - 1 : null,
+        onChanged: rasterMetadata.length > 1
+            ? (value) => onSliderChanged(value.round())
+            : null,
       ),
-      const SizedBox(height: 8),
+      /*const SizedBox(height: 8),
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: List.generate(rasterMetadata.length, (index) {
+          print('index: $index');
           final label = getDateForIndex(index);
           final isSelected = index == currentIndex;
           return Expanded(
@@ -329,7 +304,7 @@ Widget buildSlider({
             ),
           );
         }),
-      ),
+      ),*/
     ],
   );
 }
