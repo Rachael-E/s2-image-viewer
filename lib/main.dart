@@ -23,7 +23,7 @@ void main() {
           trackHeight: 4,
           thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
           overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
-          tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 6),
+          tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 2),
           activeTickMarkColor: Colors.white,
           inactiveTickMarkColor: Colors.white,
           activeTrackColor: Colors.grey.shade700,

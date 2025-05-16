@@ -104,7 +104,8 @@ class _RasterViewerState extends State<RasterViewer> {
 
     if (selectedLayer != null) {
       selectedLayer.isVisible = true;
-      debugPrint("✅ Displayed raster layer $targetLayerName from index $newIndex");
+      debugPrint(
+          "✅ Displayed raster layer $targetLayerName from index $newIndex");
     } else {
       debugPrint("⚠️ Raster layer $targetLayerName not found in map.");
     }
@@ -282,7 +283,7 @@ class _RasterViewerState extends State<RasterViewer> {
     setState(() {
       _loadingMessage = 'Finalizing...';
       rasterMetadata = cached;
-      currentSliderIndex = cached.length;
+      currentSliderIndex = cached.length - 1;
     });
   }
 

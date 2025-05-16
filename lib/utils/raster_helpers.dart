@@ -51,7 +51,7 @@ Future<DateTimeRange?> pickDateRange({
             dialogTheme: const DialogTheme(backgroundColor: Colors.black),
             textTheme: TextTheme(
               headlineLarge:
-                  TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             )),
         child: child!,
       );
@@ -285,17 +285,25 @@ Widget buildSlider({
             ? (value) => onSliderChanged(value.round())
             : null,
       ),
-      /*const SizedBox(height: 8),
+      const SizedBox(height: 8),
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: List.generate(rasterMetadata.length, (index) {
-          print('index: $index');
+          final isFirst = index == 0;
+          final isLast = index == rasterMetadata.length - 1;
+
+          if (!isFirst && !isLast) {
+            return const SizedBox.shrink(); // Takes no space
+          }
+
           final label = getDateForIndex(index);
           final isSelected = index == currentIndex;
-          return Expanded(
+
+          return Flexible(
+            fit: FlexFit.loose, // Only take as much space as needed
             child: Text(
               label,
-              textAlign: TextAlign.center,
+              textAlign: isFirst ? TextAlign.left : TextAlign.right,
               style: TextStyle(
                 fontSize: 10,
                 color: isSelected ? Colors.yellow : Colors.white70,
@@ -304,7 +312,7 @@ Widget buildSlider({
             ),
           );
         }),
-      ),*/
+      ),
     ],
   );
 }
