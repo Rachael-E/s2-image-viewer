@@ -104,10 +104,6 @@ class _RasterViewerState extends State<RasterViewer> {
 
     if (selectedLayer != null) {
       selectedLayer.isVisible = true;
-      debugPrint(
-          "✅ Displayed raster layer $targetLayerName from index $newIndex");
-    } else {
-      debugPrint("⚠️ Raster layer $targetLayerName not found in map.");
     }
 
     await Future.delayed(const Duration(milliseconds: 50));
@@ -132,12 +128,6 @@ class _RasterViewerState extends State<RasterViewer> {
     _mapViewController.interactionOptions.enabled = false;
     _mapViewController
         .setViewpoint(Viewpoint.fromTargetExtent(_envelope.extent));
-
-    _imageServiceRaster = ImageServiceRaster(
-      uri: Uri.parse(
-          'https://sentinel.arcgis.com/arcgis/rest/services/Sentinel2/ImageServer'),
-    );
-    await _imageServiceRaster.load();
   }
 
   Future<void> _promptUserForImageryDates() async {
@@ -323,13 +313,10 @@ class _RasterViewerState extends State<RasterViewer> {
         final date = DateTime.fromMillisecondsSinceEpoch(r['acquisitiondate']);
         final cloud = (r['cloudcover'] * 100).toStringAsFixed(1);
         final id = r['objectid'];
-        debugPrint('📅 $date — ☁️ $cloud% cloud cover — 🆔 $id');
       }
 
       return rasterMetadata;
     } else {
-      debugPrint('❌ Error: ${response.statusCode}');
-      debugPrint('Body: ${response.body}');
       return [];
     }
   }
@@ -345,7 +332,6 @@ class _RasterViewerState extends State<RasterViewer> {
 
     final existingLayer = _getRasterLayerByName(layerName);
     if (existingLayer != null) {
-      debugPrint("✅ Raster layer $layerName already added to map.");
       markLayerDrawnIfComplete(layerName);
 
       return;
@@ -378,10 +364,8 @@ class _RasterViewerState extends State<RasterViewer> {
   void markLayerDrawnIfComplete(String layerName) {
     if (!_drawnRasterLayerNames.contains(layerName)) {
       _drawnRasterLayerNames.add(layerName);
-      debugPrint("🟡 Marked $layerName as drawn");
 
       if (_drawnRasterLayerNames.length >= expectedRasterLayerCount) {
-        debugPrint("✅ All raster layers drawn — showing slider");
         if (mounted) {
           setState(() {
             _isCompleted = true;
