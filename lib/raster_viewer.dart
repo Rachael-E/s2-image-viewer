@@ -19,7 +19,6 @@ class _RasterViewerState extends State<RasterViewer> {
   List<Map<String, dynamic>> rasterMetadata = [];
   late ArcGISMap _map;
   late Envelope _envelope;
-  late ImageServiceRaster _imageServiceRaster;
   bool _isCompleted = false;
   bool _isLoading = false;
   String? _loadingMessage;
@@ -90,25 +89,6 @@ class _RasterViewerState extends State<RasterViewer> {
         ],
       ),
     );
-  }
-
-  Future<void> _onSliderChanged(int newIndex) async {
-    final objectId = rasterMetadata[newIndex]['objectid'] as int;
-    final targetLayerName = objectId.toString();
-
-    RasterLayer? selectedLayer = _getRasterLayerByName(targetLayerName);
-
-    for (final layer in _map.operationalLayers.whereType<RasterLayer>()) {
-      layer.isVisible = false;
-    }
-
-    if (selectedLayer != null) {
-      selectedLayer.isVisible = true;
-    }
-
-    await Future.delayed(const Duration(milliseconds: 50));
-
-    setState(() => currentSliderIndex = newIndex);
   }
 
   Future<void> onMapViewReady() async {
@@ -184,10 +164,10 @@ class _RasterViewerState extends State<RasterViewer> {
       _loadingMessage = "Fetching and caching rasters...";
     });
 
-    await _handleAutumnImagery();
+    await _handleSatelliteImagery();
   }
 
-  Future<void> _handleAutumnImagery() async {
+  Future<void> _handleSatelliteImagery() async {
     setState(() {
       _isCompleted = false;
       _isLoading = true;
@@ -228,7 +208,7 @@ class _RasterViewerState extends State<RasterViewer> {
       builder: (context) => AlertDialog(
         title: const Text('Imagery Available'),
         content: Text(
-            'We found ${fetched.length} satellite images with your chosen processing needs. Do you want to load and browse them?'),
+            'We found ${fetched.length} satellite images with your chosen settings. Do you want to load and browse them?'),
         actions: [
           TextButton(
               onPressed: (() => Navigator.of(context).pop(false)),
@@ -309,14 +289,10 @@ class _RasterViewerState extends State<RasterViewer> {
           .toList()
         ..sort((a, b) => a['acquisitiondate'].compareTo(b['acquisitiondate']));
 
-      for (var r in rasterMetadata) {
-        final date = DateTime.fromMillisecondsSinceEpoch(r['acquisitiondate']);
-        final cloud = (r['cloudcover'] * 100).toStringAsFixed(1);
-        final id = r['objectid'];
-      }
-
       return rasterMetadata;
     } else {
+      debugPrint('❌ Error: ${response.statusCode}');
+      debugPrint('Body: ${response.body}');
       return [];
     }
   }
@@ -359,6 +335,25 @@ class _RasterViewerState extends State<RasterViewer> {
         markLayerDrawnIfComplete(layerName);
       }
     });
+  }
+
+  Future<void> _onSliderChanged(int newIndex) async {
+    final objectId = rasterMetadata[newIndex]['objectid'] as int;
+    final targetLayerName = objectId.toString();
+
+    RasterLayer? selectedLayer = _getRasterLayerByName(targetLayerName);
+
+    for (final layer in _map.operationalLayers.whereType<RasterLayer>()) {
+      layer.isVisible = false;
+    }
+
+    if (selectedLayer != null) {
+      selectedLayer.isVisible = true;
+    }
+
+    await Future.delayed(const Duration(milliseconds: 50));
+
+    setState(() => currentSliderIndex = newIndex);
   }
 
   void markLayerDrawnIfComplete(String layerName) {
