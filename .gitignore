@@ -50,5 +50,3 @@ app.*.map.json
 arcgis_maps_core
 *.so
 /ios/Podfile.lock
-
-
