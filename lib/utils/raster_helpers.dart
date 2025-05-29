@@ -218,7 +218,7 @@ Widget buildLoadingOverlay(String? message) => Positioned(
 Widget buildBottomControls({
   required BuildContext context,
   required bool isCompleted,
-  required List<Map<String, dynamic>> rasterMetadata,
+  required List<Map<String, dynamic>> rasterAttributes,
   required VoidCallback onSettingsPressed,
   required VoidCallback onInfoPressed,
   required Widget slider,
@@ -230,7 +230,7 @@ Widget buildBottomControls({
       mainAxisSize: MainAxisSize.min,
       spacing: 10,
       children: [
-        if (isCompleted && rasterMetadata.isNotEmpty) slider,
+        if (isCompleted && rasterAttributes.isNotEmpty) slider,
         const SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -261,14 +261,15 @@ Widget buildBottomControls({
 Widget buildSlider({
   required BuildContext context,
   required int currentIndex,
-  required List<Map<String, dynamic>> rasterMetadata,
+  required List<Map<String, dynamic>> rasterAttributes,
   required void Function(int) onSliderChanged,
   required String Function(int) getDateForIndex,
 }) {
-  final maxIndex = rasterMetadata.length > 1 ? rasterMetadata.length - 1 : 1;
+  final maxIndex =
+      rasterAttributes.length > 1 ? rasterAttributes.length - 1 : 1;
   final safeSliderIndex = currentIndex.clamp(0, maxIndex).toDouble();
   final label =
-      rasterMetadata.isNotEmpty && currentIndex < rasterMetadata.length
+      rasterAttributes.isNotEmpty && currentIndex < rasterAttributes.length
           ? getDateForIndex(currentIndex)
           : null;
 
@@ -280,17 +281,18 @@ Widget buildSlider({
         min: 0,
         thumbColor: Colors.amber,
         max: maxIndex.toDouble(),
-        divisions: rasterMetadata.length > 1 ? rasterMetadata.length - 1 : null,
-        onChanged: rasterMetadata.length > 1
+        divisions:
+            rasterAttributes.length > 1 ? rasterAttributes.length - 1 : null,
+        onChanged: rasterAttributes.length > 1
             ? (value) => onSliderChanged(value.round())
             : null,
       ),
       const SizedBox(height: 8),
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: List.generate(rasterMetadata.length, (index) {
+        children: List.generate(rasterAttributes.length, (index) {
           final isFirst = index == 0;
-          final isLast = index == rasterMetadata.length - 1;
+          final isLast = index == rasterAttributes.length - 1;
 
           if (!isFirst && !isLast) {
             return const SizedBox.shrink(); // Takes no space
@@ -336,7 +338,8 @@ Future<void> showInfoDialog(BuildContext context) async {
       ),
       content: const Text(
         'This app shows imagery from Sentinel-2, hosted on an ArcGIS Image Service.\n\n'
-        'The service displays any image available within the past 14 months.',
+        'The service displays any image available within the past 14 months.\n\n'
+        'Source: Esri, European Commission, European Space Agency, Amazon Web Services',
         style: TextStyle(color: Colors.white),
       ),
       actions: [

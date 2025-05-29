@@ -16,7 +16,7 @@ class _RasterViewerState extends State<RasterViewer> {
   final Set<String> _drawnRasterLayerNames = {};
   int currentSliderIndex = 0;
   int expectedRasterLayerCount = 0;
-  List<Map<String, dynamic>> rasterMetadata = [];
+  List<Map<String, dynamic>> rasterDataAttributes = [];
   late ArcGISMap _map;
   late Envelope _envelope;
   bool _isCompleted = false;
@@ -73,16 +73,16 @@ class _RasterViewerState extends State<RasterViewer> {
             child: buildBottomControls(
               context: context,
               isCompleted: _isCompleted,
-              rasterMetadata: rasterMetadata,
+              rasterAttributes: rasterDataAttributes,
               onSettingsPressed: _promptUserForImageryDates,
               onInfoPressed: () => showInfoDialog(context),
               slider: buildSlider(
                 context: context,
                 currentIndex: currentSliderIndex,
-                rasterMetadata: rasterMetadata,
+                rasterAttributes: rasterDataAttributes,
                 onSliderChanged: _onSliderChanged,
                 getDateForIndex: (index) =>
-                    getDateForIndex(index, rasterMetadata),
+                    getDateForIndex(index, rasterDataAttributes),
               ),
             ),
           ),
@@ -103,8 +103,6 @@ class _RasterViewerState extends State<RasterViewer> {
       spatialReference: SpatialReference.wgs84,
     );
 
-    _map.maxExtent = _envelope;
-    _mapViewController.interactionOptions.panEnabled = false;
     _mapViewController.interactionOptions.enabled = false;
     _mapViewController
         .setViewpoint(Viewpoint.fromTargetExtent(_envelope.extent));
@@ -160,8 +158,8 @@ class _RasterViewerState extends State<RasterViewer> {
 
     setState(() {
       _selectedCloudCover = selected;
-      _isLoading = true;
-      _loadingMessage = "Fetching and caching rasters...";
+      // _isLoading = false;
+      // _loadingMessage = "Waiting for user input...";
     });
 
     await _handleSatelliteImagery();
@@ -170,17 +168,18 @@ class _RasterViewerState extends State<RasterViewer> {
   Future<void> _handleSatelliteImagery() async {
     setState(() {
       _isCompleted = false;
-      _isLoading = true;
-      _loadingMessage = 'Fetching and caching rasters...';
+      // _isLoading = true;
       _drawnRasterLayerNames.clear();
       expectedRasterLayerCount = 0;
-      rasterMetadata.clear();
+      rasterDataAttributes.clear();
     });
-    final fetched = await fetchRasterMetadata();
+
+    final fetchedRasterAttributes =
+        await queryImageServiceForRasterAttributes();
     if (!mounted) return;
 
     // Show message if no imagery is available
-    if (fetched.isEmpty) {
+    if (fetchedRasterAttributes.isEmpty) {
       await showDialog<void>(
         context: context,
         builder: (context) => AlertDialog(
@@ -208,7 +207,7 @@ class _RasterViewerState extends State<RasterViewer> {
       builder: (context) => AlertDialog(
         title: const Text('Imagery Available'),
         content: Text(
-            'We found ${fetched.length} satellite images with your chosen settings. Do you want to load and browse them?'),
+            'We found ${fetchedRasterAttributes.length} satellite images with your chosen settings. Do you want to load and browse them?'),
         actions: [
           TextButton(
               onPressed: (() => Navigator.of(context).pop(false)),
@@ -228,36 +227,37 @@ class _RasterViewerState extends State<RasterViewer> {
       return;
     }
 
-    _drawnRasterLayerNames.clear();
-    expectedRasterLayerCount = fetched.length;
-    List<Map<String, dynamic>> cached = [];
+    expectedRasterLayerCount = fetchedRasterAttributes.length;
+    List<Map<String, dynamic>> currentDisplayedRasters = [];
 
     for (int i = 0; i < expectedRasterLayerCount; i++) {
       if (!mounted) return;
 
       setState(() {
+        _isLoading = true;
         _loadingMessage =
-            'Fetching and caching ${i + 1}/$expectedRasterLayerCount rasters...';
+            'Fetching ${i + 1}/$expectedRasterLayerCount rasters...';
       });
 
-      await showAndCacheRaster(
+      await displayRasterOnMap(
         index: i,
-        fetchedRasterMetadata: fetched,
+        fetchedRasterAttributes: fetchedRasterAttributes,
         envelope: _envelope,
         map: _map,
       );
 
-      cached.add(fetched[i]);
+      currentDisplayedRasters.add(fetchedRasterAttributes[i]);
     }
 
     setState(() {
       _loadingMessage = 'Finalizing...';
-      rasterMetadata = cached;
-      currentSliderIndex = cached.length - 1;
+      rasterDataAttributes = currentDisplayedRasters;
+      currentSliderIndex = currentDisplayedRasters.length - 1;
     });
   }
 
-  Future<List<Map<String, dynamic>>> fetchRasterMetadata() async {
+  Future<List<Map<String, dynamic>>>
+      queryImageServiceForRasterAttributes() async {
     final start = acquisitionStartDate.toIso8601String().split('T')[0];
     final end = acquisitionEndDate.toIso8601String().split('T')[0];
     final whereClause =
@@ -283,13 +283,13 @@ class _RasterViewerState extends State<RasterViewer> {
       final data = json.decode(response.body);
       final features = data['features'] as List<dynamic>;
 
-      final rasterMetadata = features
+      final attributesSortedByDate = features
           .map((f) => f['attributes'] as Map<String, dynamic>)
           .where((attrs) => attrs.containsKey('acquisitiondate'))
           .toList()
         ..sort((a, b) => a['acquisitiondate'].compareTo(b['acquisitiondate']));
 
-      return rasterMetadata;
+      return attributesSortedByDate;
     } else {
       debugPrint('❌ Error: ${response.statusCode}');
       debugPrint('Body: ${response.body}');
@@ -297,34 +297,39 @@ class _RasterViewerState extends State<RasterViewer> {
     }
   }
 
-  Future<void> showAndCacheRaster({
+  Future<void> displayRasterOnMap({
     required int index,
-    required List<Map<String, dynamic>> fetchedRasterMetadata,
+    required List<Map<String, dynamic>> fetchedRasterAttributes,
     required Envelope envelope,
     required ArcGISMap map,
   }) async {
-    final objectId = fetchedRasterMetadata[index]['objectid'] as int;
+    final objectId = fetchedRasterAttributes[index]['objectid'] as int;
     final layerName = objectId.toString();
 
+    // if a layer has already been drawn don't request it again from the server
     final existingLayer = _getRasterLayerByName(layerName);
     if (existingLayer != null) {
       markLayerDrawnIfComplete(layerName);
-
       return;
     }
 
-    final raster = ImageServiceRaster(
+    final imageServiceRaster = ImageServiceRaster(
       uri: Uri.parse(
         'https://sentinel.arcgis.com/arcgis/rest/services/Sentinel2/ImageServer',
       ),
     );
 
-    raster.mosaicRule = MosaicRule()
-      ..mosaicMethod = MosaicMethod.attribute
-      ..sortField = 'OBJECTID'
+    // raster.renderingRule = RenderingRule.withRenderingRuleJson(
+    //   jsonEncode({
+    //     'rasterFunction': 'Color Infrared with DRA',
+    //   }),
+    // );
+
+    imageServiceRaster.mosaicRule = MosaicRule()
       ..whereClause = 'OBJECTID = $objectId';
 
-    final rasterLayer = RasterLayer.withRaster(raster)..name = layerName;
+    final rasterLayer = RasterLayer.withRaster(imageServiceRaster)
+      ..name = layerName;
 
     await rasterLayer
         .load()
@@ -338,7 +343,7 @@ class _RasterViewerState extends State<RasterViewer> {
   }
 
   Future<void> _onSliderChanged(int newIndex) async {
-    final objectId = rasterMetadata[newIndex]['objectid'] as int;
+    final objectId = rasterDataAttributes[newIndex]['objectid'] as int;
     final targetLayerName = objectId.toString();
 
     RasterLayer? selectedLayer = _getRasterLayerByName(targetLayerName);
