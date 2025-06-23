@@ -168,7 +168,6 @@ class _RasterViewerState extends State<RasterViewer> {
   Future<void> _handleSatelliteImagery() async {
     setState(() {
       _isCompleted = false;
-      // _isLoading = true;
       _drawnRasterLayerNames.clear();
       expectedRasterLayerCount = 0;
       rasterDataAttributes.clear();
@@ -254,6 +253,8 @@ class _RasterViewerState extends State<RasterViewer> {
       rasterDataAttributes = currentDisplayedRasters;
       currentSliderIndex = currentDisplayedRasters.length - 1;
     });
+
+    _onSliderChanged(currentSliderIndex);
   }
 
   Future<List<Map<String, dynamic>>>
@@ -318,12 +319,6 @@ class _RasterViewerState extends State<RasterViewer> {
         'https://sentinel.arcgis.com/arcgis/rest/services/Sentinel2/ImageServer',
       ),
     );
-
-    // raster.renderingRule = RenderingRule.withRenderingRuleJson(
-    //   jsonEncode({
-    //     'rasterFunction': 'Color Infrared with DRA',
-    //   }),
-    // );
 
     imageServiceRaster.mosaicRule = MosaicRule()
       ..whereClause = 'OBJECTID = $objectId';

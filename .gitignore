@@ -50,3 +50,7 @@ app.*.map.json
 arcgis_maps_core
 *.so
 /ios/Podfile.lock
+macos/Flutter/ephemeral/Flutter-Generated.xcconfig
+macos/Flutter/ephemeral/flutter_export_environment.sh
+macos/Flutter/GeneratedPluginRegistrant.swift
+macos/Podfile
