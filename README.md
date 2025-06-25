@@ -1,6 +1,6 @@
 # Sentinel 2 Image Viewer
 
-A cross platform mobile app for iOS and Android that shows filtered imagery from the Sentinel-2 satellite. This app was built with the [ArcGIS Maps SDK for Flutter](https://developers.arcgis.com/flutter) and displays imagery from an Esri hosted image service which serves processed Sentinel-2 satellite raster data, on the fly, to the app. The service displays any image available within the past 14 months.
+A cross platform mobile app for iOS and Android that displays raster data (imagery) obtained from the Sentinel-2 satellite, sourced from Esri's [Sentinel2 Image Server REST service](https://sentinel.arcgis.com/arcgis/rest/services/Sentinel2/ImageServer). The image service is sourced from the Sentinel-2 on AWS collections, and consists of imagery collected within the past 14 months. This app was built with the [ArcGIS Maps SDK for Flutter](https://developers.arcgis.com/flutter/).
 
 You can read more about this app and how it was built in the blog post [How to integrate satellite imagery in mobile app development with Flutter Maps SDK](https://www.esri.com/arcgis-blog/products/sdk-flutter/developers/map-vehicle-meeting-points-flutter/) on Esri's ArcGIS Blog.
 
