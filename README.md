@@ -6,6 +6,9 @@ You can read more about this app and how it was built in the blog post [How to i
 
 ![Mobile app screen showing satellite imagery mosaic](https://github.com/user-attachments/assets/33893bbe-759f-416b-9f01-3a1132dd6dbb)
 
+![TrimmedSatAppDemo](https://github.com/user-attachments/assets/f03cbe2c-937e-4195-b2cf-59912d8ef8e6)
+
+
 Imagery data source: Esri, European Commission, European Space Agency, Amazon Web Services.
 Contains Copernicus Sentinel data for the current and previous year.
 
